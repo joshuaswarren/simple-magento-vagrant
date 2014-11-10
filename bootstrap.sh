@@ -92,3 +92,72 @@ cd /vagrant/httpdocs
 wget https://raw.github.com/netz98/n98-magerun/master/n98-magerun.phar
 chmod +x ./n98-magerun.phar
 sudo mv ./n98-magerun.phar /usr/local/bin/
+
+cd /usr/local/bin
+ln -s n98-magerun.phar mr
+apt-get install -y curl git
+curl -sS https://getcomposer.org/installer | php
+ln -s composer.phar composer
+cd /usr/src/
+git clone git://github.com/Behat/Behat.git 
+cd Behat
+git submodule update --init
+composer install
+cp bin/behat /usr/local/bin/
+cd /usr/src/
+git clone https://github.com/phpspec/phpspec
+cd phpspec
+composer install
+cp bin/phpspec /usr/local/bin/
+cd /var/www/
+COMPOSER=$(cat <<EOF
+{
+    "require-dev": {
+        "magetest/magento-behat-extension": "dev-develop",
+        "magetest/magento-phpspec-extension": "~2.0"
+    },
+     "require": {
+        "php": ">=5.3.0"
+    },
+    "config": {
+        "bin-dir": "bin"
+    },
+    "autoload": {
+        "psr-0": {
+            "": [
+                "public/app",
+                "public/app/code/local",
+                "public/app/code/community",
+                "public/app/code/core",
+                "public/lib"
+            ]
+        }
+    },
+    "minimum-stability": "dev"
+}
+EOF
+)
+echo "$COMPOSER" > /var/www/composer.json
+cd /var/www/
+composer install --dev --prefer-dist --no-interaction
+PHPSPEC=$(cat <<EOF
+extensions: [MageTest\PhpSpec\MagentoExtension\Extension]
+mage_locator:
+  spec_prefix: 'spec'
+  src_path: 'public/app/code'
+  spec_path: 'spec/public/app/code'
+  code_pool: 'community'
+EOF
+)
+echo "$COMPOSER" > /var/www/phpspec.yml
+BEHAT=$(cat <<EOF
+default:
+  extensions:
+    MageTest\MagentoExtension\Extension:
+      base_url: "http://project.development.local"
+EOF
+)
+echo "$BEHAT" > /var/www/behat.yml
+bin/behat --init
+
+
