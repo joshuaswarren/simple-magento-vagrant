@@ -95,6 +95,11 @@ sudo mv ./n98-magerun.phar /usr/local/bin/
 
 cd /usr/local/bin
 ln -s n98-magerun.phar mr
+
+wget https://phar.phpunit.de/phpunit.phar
+chmod +x phpunit.phar
+ln -s phpunit.phar phpunit
+
 apt-get install -y curl git
 curl -sS https://getcomposer.org/installer | php
 ln -s composer.phar composer
@@ -149,7 +154,7 @@ mage_locator:
   code_pool: 'community'
 EOF
 )
-echo "$COMPOSER" > /var/www/phpspec.yml
+echo "$PHPSPEC" > /var/www/phpspec.yml
 BEHAT=$(cat <<EOF
 default:
   extensions:
@@ -159,5 +164,6 @@ EOF
 )
 echo "$BEHAT" > /var/www/behat.yml
 bin/behat --init
-
-
+rm /var/www/composer.lock
+composer update
+curl -o /usr/bin/modman https://raw.github.com/colinmollenhour/modman/master/modman && chmod +x /usr/bin/modman 
