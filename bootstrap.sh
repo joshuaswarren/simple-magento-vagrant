@@ -166,4 +166,8 @@ echo "$BEHAT" > /var/www/behat.yml
 bin/behat --init
 rm /var/www/composer.lock
 composer update
-curl -o /usr/bin/modman https://raw.github.com/colinmollenhour/modman/master/modman && chmod +x /usr/bin/modman 
+cd /usr/local/src/
+git clone https://github.com/colinmollenhour/modman
+cd modman
+cp modman /usr/local/bin/
+chmod a+x /usr/local/bin/modman
